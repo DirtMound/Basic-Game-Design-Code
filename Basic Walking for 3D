@@ -1,0 +1,115 @@
+//This is the most basic walking code that I could ever think of, I also put some //'s to tell you what does what!
+
+using UnityEngine;
+ 
+public class Player : MonoBehaiviour //Tells unity what it's controlling
+{
+ 
+    void Update() //Updates on command
+    {
+        if (Input.GetKeyDown(KeyCode.D)) //Tells unity if a specific key is pressed, in this case "D", then it has to run the code
+            transform.position += Vector3.right; //Tells unity that if the specific key is pressed, is should force the player to move to the right
+ 
+        if (Input.GetKeyDown(KeyCode.A))
+            transform.position += Vector3.left;
+ 
+        if (Input.GetKeyDown(KeyCode.W))
+            transform.position += Vector3.forward;
+ 
+        if (Input.GetKeyDown(KeyCode.S))
+            transform.position += Vector3.back;
+       
+        if (Input.GetKeyDown(KeyCode.Space))
+            transform.position = new Vector3(0, 0.5f, 0); //Tells unity that the player pressed space, so it should make the player move up at a rate of 0.5 upwards, then back down
+    }
+}
+
+
+//This is a little more complicated but it also gets the job done better
+
+using UnityEngine;
+
+public class Player : MonoBehaiviour
+{
+    [SerializeField] private float _moveSpeed = 2f;
+
+    void Update;
+    {
+        //For WASD movement, the most favorite type of movement
+
+        if (Input.GetKey(KeyCode.D))
+        transform.position += Time.deltaTime * _moveSpeed * Vector3.right;
+
+        if (Input.GetKey(KeyCode.A))
+        transform.position += Time.deltaTime * _moveSpeed * Vector3.left;
+
+        if (Input.GetKey(KeyCode.W))
+        transform.position += Time.deltaTime * _moveSpeed * Vector3.forward;
+
+        if (Input.GetKey(KeyCode.S))
+        transform.position += Time.deltaTime * _moveSpeed * Vector3.back;
+    }
+}
+
+//This is the most complicated one you'll see on here from me, and took me the most amount of time to write, couldn't ctrl+c ctrl+v ;(
+//Make sure to have your ground and anything that can apply as the ground, walls, collidables, etc. have the tag "Ground"
+
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Player : MonoBehaiviour
+{
+    //Variables
+    float moveForward;
+    float moveSide;
+    float moveUp;
+
+    bool isGorunded;
+
+    public float walkSpeed = 5f;
+    public float sprintSpeed = 12f;
+    float currentSpeed;
+    public float jumpSpeed = 4f;
+    Rigidbody rig;
+
+    //Start is called before the first frame update
+    void Start()
+    {
+        rig = GetComponent<Rigidbody>();
+    }
+
+    //Update is called once per frame
+    void Update() 
+    {
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            if (currentSpeed != sprintSpeed)
+                currentSpeed = sprintSpeed;
+        }
+        else
+            currentSpeed = walkSpeed;      
+    
+        moveForward = Input.GetAxis("Vertical") * currentSpeed;
+        moveSide = Input.GetAxis("Horizontal") * currentSpeed;
+        moveUp = Input.GetAxis("Jump") * jumpSpeed;
+    }
+
+    private void FixedUpdate() 
+    {
+        rig.velocity = (transform.forward * moveForward) + (transform.right * moveSide) + (transform.up * rig.velocity.x);
+
+        //Here's the character jumping
+        if (isGorunded && moveUp != 0)
+        {
+            rig.AddForce(transform.up * moveUp, ForceMode.VelocityChange);
+            isGrounded = false;
+        }    
+    }
+
+    private void OnCollisionEnter(Collsion collision)
+    {
+        //Collision with the ground
+        if (Collision.gameObject.tag == "Ground")
+            isGrounded = true;
+    }
+}
